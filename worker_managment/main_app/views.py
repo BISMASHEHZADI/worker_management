@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from decimal import Decimal
 from .models import Worker, SalaryIncrement
 
@@ -197,4 +198,95 @@ def salary_increment(request):
         'recent_increments': recent_increments,
         'error_message': error_message,
         'success_message': success_message
+    })
+
+@login_required(login_url='login')
+def user_management(request):
+    if not request.user.is_superuser:
+        return redirect('home')
+    
+    users = User.objects.all()
+    error_message = None
+    success_message = None
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        email = request.POST.get('email', '')
+        
+        if not username or not password:
+            error_message = 'Username and password are required.'
+        elif User.objects.filter(username=username).exists():
+            error_message = 'A user with this username already exists.'
+        else:
+            User.objects.create_user(username=username, password=password, email=email)
+            success_message = f'User "{username}" created successfully.'
+    
+    return render(request, 'user_management.html', {
+        'users': users,
+        'error_message': error_message,
+        'success_message': success_message
+    })
+
+@login_required(login_url='login')
+def user_edit(request, user_id):
+    if not request.user.is_superuser:
+        return redirect('home')
+    
+    user = User.objects.get(id=user_id)
+    error_message = None
+    success_message = None
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email', '')
+        is_staff = request.POST.get('is_staff') == 'on'
+        is_superuser = request.POST.get('is_superuser') == 'on'
+        
+        # Check if username already exists (excluding current user)
+        if User.objects.filter(username=username).exclude(id=user_id).exists():
+            error_message = 'A user with this username already exists.'
+        else:
+            user.username = username
+            user.email = email
+            user.is_staff = is_staff
+            user.is_superuser = is_superuser
+            
+            # Update password if provided
+            password = request.POST.get('password')
+            if password:
+                user.set_password(password)
+            
+            user.save()
+            success_message = f'User "{username}" updated successfully.'
+    
+    return render(request, 'user_management.html', {
+        'users': User.objects.all(),
+        'editing_user': user,
+        'error_message': error_message,
+        'success_message': success_message
+    })
+
+@login_required(login_url='login')
+def user_delete(request, user_id):
+    if not request.user.is_superuser:
+        return redirect('home')
+    
+    user = User.objects.get(id=user_id)
+    
+    # Prevent deletion of admin users
+    if user.is_superuser:
+        return redirect('user_management')
+    
+    if request.method == 'POST':
+        username = user.username
+        user.delete()
+        return render(request, 'user_management.html', {
+            'users': User.objects.all(),
+            'success_message': f'User "{username}" deleted successfully.'
+        })
+    
+    return render(request, 'user_management.html', {
+        'users': User.objects.all(),
+        'deleting_user': user
     })
