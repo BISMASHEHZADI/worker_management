@@ -1,19 +1,50 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from decimal import Decimal
 from .models import Worker, SalaryIncrement
 
+def custom_login(request):
+    if request.user.is_authenticated:
+        return redirect('home')
+    
+    error_message = None
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            return redirect('home')
+        else:
+            error_message = 'Invalid username or password. Please try again.'
+    
+    return render(request, 'login.html', {'error_message': error_message})
+
+def custom_logout(request):
+    logout(request)
+    return redirect('login')
+
+@login_required(login_url='login')
 def home(request):
     return render(request, 'home.html')
 
+@login_required(login_url='login')
 def workers(request):
     return render(request, 'home.html')
 
+@login_required(login_url='login')
 def tasks(request):
     return render(request, 'home.html')
 
+@login_required(login_url='login')
 def reports(request):
     return render(request, 'home.html')
 
+@login_required(login_url='login')
 def worker_entry(request):
     workers_list = Worker.objects.all()
     error_message = None
@@ -51,6 +82,7 @@ def worker_entry(request):
     
     return render(request, 'worker_entry.html', {'workers': workers_list, 'error_message': error_message})
 
+@login_required(login_url='login')
 def find_worker(request):
     query = request.GET.get('q', '')
     workers = []
@@ -74,15 +106,18 @@ def find_worker(request):
     
     return render(request, 'find_worker.html', {'workers': workers, 'query': query})
 
+@login_required(login_url='login')
 def worker_detail(request, worker_id):
     worker = Worker.objects.get(id=worker_id)
     increments = worker.increments.all().order_by('-year')
     return render(request, 'worker_detail.html', {'worker': worker, 'increments': increments})
 
+@login_required(login_url='login')
 def case_manager(request):
     workers_list = Worker.objects.all()
     return render(request, 'case_manager.html', {'workers': workers_list})
 
+@login_required(login_url='login')
 def worker_edit(request, worker_id):
     worker = Worker.objects.get(id=worker_id)
     error_message = None
@@ -119,6 +154,7 @@ def worker_edit(request, worker_id):
     
     return render(request, 'worker_entry.html', {'worker': worker, 'error_message': error_message, 'is_edit': True})
 
+@login_required(login_url='login')
 def worker_delete(request, worker_id):
     worker = Worker.objects.get(id=worker_id)
     if request.method == 'POST':
@@ -126,6 +162,7 @@ def worker_delete(request, worker_id):
         return redirect('case_manager')
     return render(request, 'worker_delete.html', {'worker': worker})
 
+@login_required(login_url='login')
 def salary_increment(request):
     workers = Worker.objects.all()
     recent_increments = SalaryIncrement.objects.all().order_by('-created_at')[:10]
