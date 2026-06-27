@@ -1,0 +1,727 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}User Management - Worker Management System{% endblock %}
+
+{% block content %}
+<style>
+  :root {
+    --red: #D32F2F;
+    --red-dark: #B71C1C;
+    --black: #111111;
+    --white: #FFFFFF;
+    --gray-100: #F5F5F5;
+    --gray-200: #EEEEEE;
+    --gray-300: #E0E0E0;
+    --gray-600: #757575;
+    --gray-800: #424242;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --overlay-bg: rgba(17, 17, 17, 0.55);
+    --shadow-modal: 0 24px 60px rgba(0, 0, 0, 0.22), 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .user-management-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .page-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--black);
+    letter-spacing: -0.01em;
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s, box-shadow 0.15s, transform 0.05s;
+  }
+
+  .btn:active {
+    transform: translateY(1px);
+  }
+
+  .btn-primary,
+  .btn-submit {
+    background: var(--red);
+    color: var(--white);
+    padding: 10px 20px;
+  }
+
+  .btn-primary:hover,
+  .btn-submit:hover {
+    background: var(--red-dark);
+  }
+
+  .btn-cancel {
+    background: var(--gray-200);
+    color: var(--gray-800);
+    padding: 10px 20px;
+  }
+
+  .btn-cancel:hover {
+    background: var(--gray-300);
+  }
+
+  .btn-confirm-delete {
+    background: #C62828;
+    color: var(--white);
+    padding: 10px 20px;
+  }
+
+  .btn-confirm-delete:hover {
+    background: var(--red-dark);
+  }
+
+  /* ---------- Form elements (reused inside modals) ---------- */
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem 1.1rem;
+  }
+
+  .form-grid .full-row {
+    grid-column: 1 / -1;
+  }
+
+  .form-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-800);
+  }
+
+  .form-input {
+    padding: 10px 14px;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    color: var(--black);
+    background: var(--white);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.12);
+  }
+
+  .form-hint {
+    font-size: 12px;
+    color: var(--gray-600);
+  }
+
+  .checkbox-row {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .checkbox-group input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--red);
+    cursor: pointer;
+  }
+
+  .checkbox-group label {
+    font-size: 14px;
+    color: var(--gray-800);
+    cursor: pointer;
+  }
+
+  /* ---------- Table card ---------- */
+  .users-table-container {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .table-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--gray-200);
+    background: var(--gray-100);
+  }
+
+  .table-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--black);
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .table-title svg {
+    color: var(--red);
+  }
+
+  .users-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .users-table th {
+    text-align: left;
+    padding: 13px 1.5rem;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--gray-600);
+    background: var(--gray-100);
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .users-table td {
+    padding: 12px 1.5rem;
+    font-size: 14px;
+    color: var(--gray-800);
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .users-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .users-table tbody tr:hover td {
+    background: var(--gray-100);
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+    transition: background 0.15s;
+  }
+
+  .btn-edit {
+    background: #E3F2FD;
+    color: #1565C0;
+  }
+
+  .btn-edit:hover {
+    background: #BBDEFB;
+  }
+
+  .btn-delete {
+    background: #FFEBEE;
+    color: #C62828;
+  }
+
+  .btn-delete:hover {
+    background: #FFCDD2;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .badge.admin {
+    background: #E8F5E9;
+    color: #2E7D32;
+  }
+
+  .badge.staff {
+    background: #E3F2FD;
+    color: #1565C0;
+  }
+
+  .badge.neutral {
+    background: var(--gray-100);
+    color: var(--gray-600);
+  }
+
+  .error-message,
+  .success-message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 1rem;
+    font-size: 14px;
+  }
+
+  .error-message {
+    background: #FFEBEE;
+    color: #C62828;
+    border-left: 4px solid var(--red);
+  }
+
+  .success-message {
+    background: #E8F5E9;
+    color: #2E7D32;
+    border-left: 4px solid #2E7D32;
+  }
+
+  /* ---------- Modal ---------- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--overlay-bg);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.18s ease;
+  }
+
+  .modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal-box {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 540px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-modal);
+    transform: translateY(10px) scale(0.97);
+    transition: transform 0.2s ease;
+    scrollbar-width: thin;
+    scrollbar-color: var(--gray-300) transparent;
+  }
+
+  .modal-box::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .modal-box::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .modal-box::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    border-radius: 10px;
+  }
+
+  .modal-overlay.active .modal-box {
+    transform: translateY(0) scale(1);
+  }
+
+  .modal-box.modal-sm {
+    max-width: 400px;
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 1.1rem 1.4rem;
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .modal-header-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .modal-header h2 {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--black);
+  }
+
+  .modal-header h2 span {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-600);
+    margin-top: 2px;
+  }
+
+  .modal-close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--gray-600);
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .modal-close-btn:hover {
+    background: var(--gray-100);
+    color: var(--black);
+  }
+
+  .modal-body {
+    padding: 1.3rem 1.4rem;
+  }
+
+  .modal-body p {
+    font-size: 14px;
+    color: var(--gray-600);
+    line-height: 1.5;
+  }
+
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 0.9rem 1.4rem;
+    border-top: 1px solid var(--gray-200);
+    background: var(--gray-100);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  }
+
+  .icon-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .icon-circle.brand {
+    background: #FFEBEE;
+    color: var(--red);
+  }
+
+  .icon-circle.danger {
+    background: #FFEBEE;
+    color: #C62828;
+  }
+
+  .modal-user-name {
+    font-weight: 600;
+    color: var(--black);
+  }
+
+  @media (max-width: 480px) {
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="user-management-container">
+
+  <div class="page-header">
+    <h1 class="page-title">User Management</h1>
+  </div>
+
+  {% if error_message %}
+    <div class="error-message">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>{{ error_message }}</span>
+    </div>
+  {% endif %}
+
+  {% if success_message %}
+    <div class="success-message">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+      <span>{{ success_message }}</span>
+    </div>
+  {% endif %}
+
+  <div class="users-table-container">
+    <div class="table-header">
+      <h2 class="table-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        All Users ({{ users|length }})
+      </h2>
+      <button type="button" class="btn btn-primary" onclick="openModal('addUserModal')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add User
+      </button>
+    </div>
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Staff Status</th>
+          <th>Superuser</th>
+          <th>Date Joined</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td><strong>{{ user.username }}</strong></td>
+          <td>{{ user.email|default:"-" }}</td>
+          <td>
+            {% if user.is_staff %}
+              <span class="badge staff">Staff</span>
+            {% else %}
+              <span class="badge neutral">Regular</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if user.is_superuser %}
+              <span class="badge admin">Admin</span>
+            {% else %}
+              <span class="badge neutral">No</span>
+            {% endif %}
+          </td>
+          <td>{{ user.date_joined|date:"M d, Y" }}</td>
+          <td>
+            <div class="action-buttons">
+              <a href="/user/{{ user.id }}/edit/" class="btn-action btn-edit">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                Edit
+              </a>
+              {% if not user.is_superuser %}
+                <a href="/user/{{ user.id }}/delete/" class="btn-action btn-delete">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                  Delete
+                </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 2rem; color: var(--gray-600);">
+            No users found. Click "Add User" above to create your first one.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============ ADD USER MODAL (client-side popup) ============ -->
+<div class="modal-overlay {% if error_message and not editing_user and not deleting_user %}active{% endif %}" id="addUserModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-header-title">
+        <div class="icon-circle brand">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        </div>
+        <h2>Add New User<span>Create a login for a worker or staff member</span></h2>
+      </div>
+      <button type="button" class="modal-close-btn" onclick="closeModal('addUserModal')" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="username" class="form-label">Username *</label>
+            <input type="text" id="username" name="username" class="form-input" required autofocus>
+          </div>
+          <div class="form-group">
+            <label for="password" class="form-label">Password *</label>
+            <input type="password" id="password" name="password" class="form-input" required>
+          </div>
+          <div class="form-group full-row">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" id="email" name="email" class="form-input">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-cancel" onclick="closeModal('addUserModal')">Cancel</button>
+        <button type="submit" class="btn btn-submit">Create User</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ EDIT USER MODAL (opens automatically when editing) ============ -->
+{% if editing_user %}
+<div class="modal-overlay active" id="editUserModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-header-title">
+        <div class="icon-circle brand">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+        </div>
+        <h2>Edit User<span>{{ editing_user.username }}</span></h2>
+      </div>
+      <a href="/user-management/" class="modal-close-btn" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </a>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="edit_username" class="form-label">Username *</label>
+            <input type="text" id="edit_username" name="username" class="form-input" value="{{ editing_user.username }}" required>
+          </div>
+          <div class="form-group">
+            <label for="edit_email" class="form-label">Email</label>
+            <input type="email" id="edit_email" name="email" class="form-input" value="{{ editing_user.email }}">
+          </div>
+          <div class="form-group full-row">
+            <label for="edit_password" class="form-label">New Password</label>
+            <input type="password" id="edit_password" name="password" class="form-input" placeholder="Leave blank to keep current">
+            <span class="form-hint">Leave blank to keep the current password.</span>
+          </div>
+          <div class="checkbox-row full-row">
+            <div class="checkbox-group">
+              <input type="checkbox" id="is_staff" name="is_staff" {% if editing_user.is_staff %}checked{% endif %}>
+              <label for="is_staff">Staff Status</label>
+            </div>
+            <div class="checkbox-group">
+              <input type="checkbox" id="is_superuser" name="is_superuser" {% if editing_user.is_superuser %}checked{% endif %}>
+              <label for="is_superuser">Superuser (Admin)</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a href="/user-management/" class="btn btn-cancel">Cancel</a>
+        <button type="submit" class="btn btn-submit">Update User</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<!-- ============ DELETE CONFIRM MODAL (opens automatically when deleting) ============ -->
+{% if deleting_user %}
+<div class="modal-overlay active" id="deleteUserModal">
+  <div class="modal-box modal-sm">
+    <div class="modal-header">
+      <div class="modal-header-title">
+        <div class="icon-circle danger">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        </div>
+        <h2>Delete User</h2>
+      </div>
+      <a href="/user-management/" class="modal-close-btn" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </a>
+    </div>
+    <div class="modal-body">
+      <p>Are you sure you want to delete <span class="modal-user-name">{{ deleting_user.username }}</span>? This action cannot be undone.</p>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="modal-footer">
+        <a href="/user-management/" class="btn btn-cancel">Cancel</a>
+        <button type="submit" class="btn btn-confirm-delete">Delete User</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<script>
+  function openModal(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('.modal-overlay').forEach(function (overlay) {
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) {
+        // Server-rendered modals (edit/delete) close by navigating back to the list.
+        var cancelLink = overlay.querySelector('.modal-close-btn[href]');
+        if (cancelLink) {
+          window.location.href = cancelLink.getAttribute('href');
+        } else {
+          overlay.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      }
+    });
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      var addModal = document.getElementById('addUserModal');
+      if (addModal && addModal.classList.contains('active')) {
+        closeModal('addUserModal');
+      }
+    }
+  });
+</script>
+{% endblock %}
