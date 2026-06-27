@@ -75,18 +75,30 @@ WSGI_APPLICATION = 'worker_managment.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgres',
+#         'NAME': 'worker_db',
+#         'USER': 'postgres',
+#         'PASSWORD': 'Stifle2025',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
+
+
+
+import os
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgres',
-        'NAME': 'worker_db',
-        'USER': 'postgres',
-        'PASSWORD': 'Stifle2025',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    'default': dj_database_url.config(
+        default=os.environ.get(
+            'DATABASE_URL',
+            'postgresql://postgre:LFWQ6jab41bnzi1qLfQtcUJuUsQadOhk@dpg-d8vtj6laeets73dfs86g-a.ohio-postgres.render.com/worker_db_tcg3'
+        )
+    )
 }
-
-
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
