@@ -1,0 +1,657 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Case Manager - Worker Management System{% endblock %}
+
+{% block content %}
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #D32F2F;
+    --red-dark: #B71C1C;
+    --red-light: #FFEBEE;
+    --black: #111111;
+    --white: #FFFFFF;
+    --gray-50: #FAFAFA;
+    --gray-100: #F5F5F5;
+    --gray-200: #EEEEEE;
+    --gray-400: #BDBDBD;
+    --gray-600: #757575;
+    --gray-800: #424242;
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  .cm-page {
+    font-family: var(--font);
+    background: var(--gray-100);
+    min-height: 100vh;
+    padding-bottom: 3rem;
+  }
+
+  /* ── PAGE HEADER ── */
+  .cm-header-card {
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-200);
+    padding: 1.5rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .cm-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .cm-header-icon {
+    width: 44px;
+    height: 44px;
+    background: var(--red);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .cm-header-icon svg { width: 22px; height: 22px; fill: var(--white); }
+
+  .cm-header-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--black);
+    letter-spacing: -0.01em;
+  }
+
+  .cm-header-sub {
+    font-size: 13px;
+    color: var(--gray-600);
+    margin-top: 2px;
+  }
+
+  .cm-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cm-btn-primary {
+    background: var(--red);
+    color: var(--white);
+    border: none;
+    padding: 9px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+
+  .cm-btn-primary:hover { background: var(--red-dark); }
+
+  .cm-btn-outline {
+    background: var(--white);
+    color: var(--gray-800);
+    border: 1px solid var(--gray-200);
+    padding: 9px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: border-color 0.15s;
+  }
+
+  .cm-btn-outline:hover { border-color: var(--gray-400); }
+
+  .cm-btn-outline svg, .cm-btn-primary svg {
+    width: 15px; height: 15px;
+  }
+
+  /* ── BODY ── */
+  .cm-body {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem 0;
+  }
+
+  /* ── STATS ROW ── */
+  .cm-stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .cm-stat {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 0.875rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 140px;
+  }
+
+  .cm-stat-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .cm-stat-val {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--black);
+    line-height: 1;
+  }
+
+  .cm-stat-lbl {
+    font-size: 11px;
+    color: var(--gray-600);
+    margin-top: 2px;
+  }
+
+  /* ── SEARCH BAR ── */
+  .cm-toolbar {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 10px 10px 0 0;
+    padding: 0.875rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: none;
+  }
+
+  .cm-search-wrap {
+    position: relative;
+    flex: 1;
+    max-width: 320px;
+  }
+
+  .cm-search-wrap svg {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 15px; height: 15px;
+    fill: var(--gray-400);
+    pointer-events: none;
+  }
+
+  .cm-search {
+    width: 100%;
+    padding: 8px 12px 8px 34px;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--black);
+    background: var(--gray-50);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .cm-search:focus { border-color: var(--red); background: var(--white); }
+
+  .cm-filter-select {
+    padding: 8px 12px;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--gray-800);
+    background: var(--gray-50);
+    outline: none;
+    cursor: pointer;
+  }
+
+  .cm-count-badge {
+    margin-left: auto;
+    background: var(--gray-100);
+    color: var(--gray-600);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+
+  /* ── TABLE WRAPPER ── */
+  .cm-table-wrap {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: 0 0 10px 10px;
+    overflow-x: auto;
+  }
+
+  /* ── TABLE ── */
+  .cm-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    table-layout: fixed;
+    min-width: 1100px;
+  }
+
+  /* Column widths — keep headers single line */
+  .cm-table col.col-id         { width: 60px; }
+  .cm-table col.col-name       { width: 130px; }
+  .cm-table col.col-father     { width: 130px; }
+  .cm-table col.col-cnic       { width: 180px; }
+  .cm-table col.col-phone      { width: 115px; }
+  .cm-table col.col-address    { width: 160px; }
+  .cm-table col.col-salary     { width: 100px; }
+  .cm-table col.col-joining    { width: 105px; }
+  .cm-table col.col-dept       { width: 110px; }
+  .cm-table col.col-desig      { width: 120px; }
+  .cm-table col.col-photo      { width: 80px; }
+  .cm-table col.col-actions    { width: 120px; }
+
+  .cm-table thead tr {
+    background: var(--black);
+  }
+
+  .cm-table th {
+    padding: 11px 12px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-bottom: 2px solid var(--red);
+  }
+
+  .cm-table th:first-child { color: var(--white); }
+
+  .cm-table tbody tr {
+    border-bottom: 1px solid var(--gray-100);
+    transition: background 0.1s;
+  }
+
+  .cm-table tbody tr:last-child { border-bottom: none; }
+  .cm-table tbody tr:hover { background: #FFF5F5; }
+
+  .cm-table td {
+    padding: 11px 12px;
+    color: var(--gray-800);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+  }
+
+  .cm-table td.td-id {
+    font-weight: 700;
+    color: var(--red);
+    font-size: 12px;
+  }
+
+  .cm-table td.td-name {
+    font-weight: 600;
+    color: var(--black);
+  }
+
+  .cm-table td.td-cnic {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--gray-600);
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .cm-table td.td-salary {
+    font-weight: 600;
+    color: #2E7D32;
+  }
+
+  .cm-table td.td-address {
+    color: var(--gray-600);
+    font-size: 12px;
+  }
+
+  /* ── PHOTO ── */
+  .cm-photo {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--gray-200);
+    display: block;
+  }
+
+  .cm-no-photo {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cm-no-photo svg {
+    width: 16px; height: 16px;
+    fill: var(--gray-400);
+  }
+
+  /* ── ACTION BUTTONS ── */
+  .cm-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .cm-action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .cm-action-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .cm-action-view {
+    background: var(--gray-100);
+    color: var(--gray-600);
+  }
+
+  .cm-action-view:hover {
+    background: var(--gray-200);
+    color: var(--gray-800);
+  }
+
+  .cm-action-edit {
+    background: #E3F2FD;
+    color: #1976D2;
+  }
+
+  .cm-action-edit:hover {
+    background: #BBDEFB;
+    color: #0D47A1;
+  }
+
+  .cm-action-delete {
+    background: #FFEBEE;
+    color: #D32F2F;
+  }
+
+  .cm-action-delete:hover {
+    background: #FFCDD2;
+    color: #B71C1C;
+  }
+
+  /* ── DEPT BADGE ── */
+  .cm-dept {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--red-light);
+    color: var(--red-dark);
+    white-space: nowrap;
+  }
+
+  /* ── EMPTY STATE ── */
+  .cm-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--gray-400);
+  }
+
+  .cm-empty svg {
+    width: 48px; height: 48px;
+    fill: var(--gray-200);
+    margin-bottom: 1rem;
+  }
+
+  .cm-empty-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-600);
+    margin-bottom: 0.5rem;
+  }
+
+  .cm-empty-sub {
+    font-size: 13px;
+    color: var(--gray-400);
+  }
+
+  @media (max-width: 768px) {
+    .cm-header-card { padding: 1rem; }
+    .cm-body { padding: 1rem; }
+    .cm-header-right { flex-wrap: wrap; }
+  }
+
+  /* ── CUSTOM SCROLLBAR ── */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--red);
+    border-radius: 3px;
+    border: 2px solid var(--gray-100);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--red-dark);
+  }
+
+  /* Firefox scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--red) var(--gray-100);
+  }
+</style>
+
+<div class="cm-page">
+
+  <!-- PAGE HEADER (white card) -->
+  <div class="cm-header-card">
+    <div class="cm-header-left">
+      <div class="cm-header-icon">
+        <svg viewBox="0 0 24 24"><path d="M20 6H16V4C16 2.89 15.11 2 14 2H10C8.89 2 8 2.89 8 4V6H4C2.89 6 2 6.89 2 8V20C2 21.11 2.89 22 4 22H20C21.11 22 22 21.11 22 20V8C22 6.89 21.11 6 20 6M10 4H14V6H10V4M12 9C13.66 9 15 10.34 15 12S13.66 15 12 15 9 13.66 9 12 10.34 9 12 9M18 20H6V19C6 17 10 15.9 12 15.9S18 17 18 19V20Z"/></svg>
+      </div>
+      <div>
+        <div class="cm-header-title">Case Manager — All Employees</div>
+        <div class="cm-header-sub">Lahore Polypropylene Industry · LPP-01</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="cm-body">
+
+    <!-- STATS -->
+    <div class="cm-stats">
+      <div class="cm-stat">
+        <span class="cm-stat-dot" style="background:#D32F2F;"></span>
+        <div>
+          <div class="cm-stat-val">{{ workers|length }}</div>
+          <div class="cm-stat-lbl">Total records</div>
+        </div>
+      </div>
+      <div class="cm-stat">
+        <span class="cm-stat-dot" style="background:#111;"></span>
+        <div>
+          <div class="cm-stat-val">{% now "d M Y" %}</div>
+          <div class="cm-stat-lbl">Today's date</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOOLBAR + TABLE -->
+    <div class="cm-toolbar">
+      <div class="cm-search-wrap">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input class="cm-search" type="text" placeholder="Search by name, CNIC, department…" id="cmSearch">
+      </div>
+      <select class="cm-filter-select" id="cmDeptFilter">
+        <option value="">All departments</option>
+      </select>
+      <span class="cm-count-badge" id="cmCount">{{ workers|length }} workers</span>
+    </div>
+
+    <div class="cm-table-wrap">
+      <table class="cm-table" id="cmTable">
+        <colgroup>
+          <col class="col-id">
+          <col class="col-name">
+          <col class="col-father">
+          <col class="col-cnic">
+          <col class="col-phone">
+          <col class="col-address">
+          <col class="col-salary">
+          <col class="col-joining">
+          <col class="col-dept">
+          <col class="col-desig">
+          <col class="col-photo">
+          <col class="col-actions">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Father Name</th>
+            <th>CNIC</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Salary</th>
+            <th>Joining Date</th>
+            <th>Department</th>
+            <th>Designation</th>
+            <th>Photo</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="cmBody">
+          {% for worker in workers %}
+          <tr data-row>
+            <td class="td-id">#{{ worker.id }}</td>
+            <td class="td-name">{{ worker.name }}</td>
+            <td>{{ worker.father_name }}</td>
+            <td class="td-cnic">{{ worker.cnic }}</td>
+            <td>{{ worker.phone_number }}</td>
+            <td class="td-address" title="{{ worker.address }}">{{ worker.address }}</td>
+            <td class="td-salary">Rs {{ worker.gross_salary }}</td>
+            <td>{{ worker.date_of_joining }}</td>
+            <td><span class="cm-dept">{{ worker.department }}</span></td>
+            <td>{{ worker.designation }}</td>
+            <td>
+              {% if worker.photo %}
+                <img src="{{ worker.photo.url }}" alt="{{ worker.name }}" class="cm-photo">
+              {% else %}
+                <div class="cm-no-photo">
+                  <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                </div>
+              {% endif %}
+            </td>
+            <td>
+              <div class="cm-actions">
+                <a href="/worker/{{ worker.id }}/" class="cm-action-btn cm-action-view" title="View">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                </a>
+                <a href="/worker/{{ worker.id }}/edit/" class="cm-action-btn cm-action-edit" title="Edit">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                </a>
+                <form method="post" action="/worker/{{ worker.id }}/delete/" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this worker?');">
+                  {% csrf_token %}
+                  <button type="submit" class="cm-action-btn cm-action-delete" title="Delete">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="12">
+              <div class="cm-empty">
+                <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                <div class="cm-empty-title">No workers found</div>
+                <div class="cm-empty-sub">Add your first worker to get started.</div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Live search + department filter
+  const searchInput = document.getElementById('cmSearch');
+  const deptFilter  = document.getElementById('cmDeptFilter');
+  const countBadge  = document.getElementById('cmCount');
+  const rows        = Array.from(document.querySelectorAll('#cmBody tr[data-row]'));
+
+  // Collect all department values from real rows and populate filter
+  const allRows = Array.from(document.querySelectorAll('#cmBody tr')).filter(r => r.children.length > 2);
+  const depts   = [...new Set(allRows.map(r => r.children[8]?.textContent.trim()).filter(Boolean))];
+  depts.forEach(d => {
+    const o = document.createElement('option');
+    o.value = d; o.textContent = d;
+    deptFilter.appendChild(o);
+  });
+
+  function filterTable() {
+    const q    = searchInput.value.toLowerCase();
+    const dept = deptFilter.value.toLowerCase();
+    let visible = 0;
+
+    allRows.forEach(row => {
+      const text    = row.textContent.toLowerCase();
+      const rowDept = row.children[8]?.textContent.trim().toLowerCase() || '';
+      
+      const match   = text.includes(q) && (dept === '' || rowDept === dept);
+      row.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+
+    countBadge.textContent = visible + ' worker' + (visible !== 1 ? 's' : '');
+  }
+
+  searchInput.addEventListener('input', filterTable);
+  deptFilter.addEventListener('change', filterTable);
+</script>
+
+{% endblock %}

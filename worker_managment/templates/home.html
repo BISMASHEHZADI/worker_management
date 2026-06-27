@@ -1,0 +1,564 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — Worker Management System</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #D32F2F;
+    --red-dark: #B71C1C;
+    --red-light: #FFEBEE;
+    --black: #111111;
+    --black-2: #1E1E1E;
+    --white: #FFFFFF;
+    --gray-50: #FAFAFA;
+    --gray-100: #F5F5F5;
+    --gray-200: #EEEEEE;
+    --gray-400: #BDBDBD;
+    --gray-600: #757575;
+    --gray-800: #424242;
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+  }
+
+  .wms-wrapper {
+    font-family: var(--font);
+    background: var(--gray-100);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .wms-content {
+    flex: 1;
+  }
+
+  /* ── TOP NAV ── */
+  .wms-nav {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(25px) saturate(200%);
+    -webkit-backdrop-filter: blur(25px) saturate(200%);
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 3px solid var(--red);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  }
+
+  .wms-nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .wms-nav-logo {
+    width: 32px;
+    height: 32px;
+    background: var(--red);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .wms-nav-logo svg {
+    width: 18px;
+    height: 18px;
+    fill: var(--white);
+  }
+
+  .wms-nav-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--black);
+    letter-spacing: 0.5px;
+  }
+
+  .wms-nav-title span {
+    color: var(--red);
+    font-weight: 600;
+    font-size: 18px;
+  }
+
+  .wms-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    list-style: none;
+  }
+
+  .wms-nav-links a {
+    color: var(--black);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .wms-nav-links a:hover {
+    background: rgba(211, 47, 47, 0.1);
+    color: var(--red);
+  }
+
+  .wms-nav-links a.active {
+    background: var(--red) !important;
+    color: var(--white) !important;
+  }
+
+  /* ── HERO ── */
+  .wms-hero {
+    background: var(--black-2);
+    padding: 3.5rem 2rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .wms-hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--red), transparent);
+  }
+
+  .wms-hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(211, 47, 47, 0.15);
+    border: 1px solid rgba(211, 47, 47, 0.3);
+    color: #EF9A9A;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 100px;
+    margin-bottom: 1.25rem;
+  }
+
+  .wms-hero-tag::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--red);
+  }
+
+  .wms-hero h1 {
+    color: var(--white);
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+  }
+
+  .wms-hero-sub {
+    color: var(--gray-400);
+    font-size: 14px;
+    margin-bottom: 2rem;
+  }
+
+  .wms-hero-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .wms-btn-primary {
+    background: var(--red);
+    color: var(--white);
+    border: none;
+    padding: 11px 26px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  .wms-btn-primary:hover {
+    background: var(--red-dark);
+    transform: translateY(-1px);
+  }
+
+  .wms-btn-primary:active { transform: translateY(0); }
+
+  .wms-btn-outline {
+    background: transparent;
+    color: var(--white);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 11px 26px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .wms-btn-outline:hover {
+    border-color: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.06);
+  }
+
+  /* ── STATS ── */
+  .wms-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0;
+    border-bottom: 1px solid var(--gray-200);
+    background: var(--white);
+  }
+
+  .wms-stat {
+    padding: 1.5rem 1.75rem;
+    border-right: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .wms-stat:last-child { border-right: none; }
+
+  .wms-stat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .wms-stat-icon.red { background: var(--red-light); }
+  .wms-stat-icon.black { background: var(--gray-100); }
+
+  .wms-stat-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .wms-stat-icon.red svg { color: var(--red); fill: var(--red); }
+  .wms-stat-icon.black svg { color: var(--gray-800); fill: var(--gray-800); }
+
+  .wms-stat-val {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--black);
+    line-height: 1;
+  }
+
+  .wms-stat-lbl {
+    font-size: 12px;
+    color: var(--gray-600);
+    margin-top: 3px;
+  }
+
+  /* ── MAIN CONTENT ── */
+  .wms-body {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  .wms-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-600);
+    margin-bottom: 1rem;
+  }
+
+  /* ── QUICK ACTIONS ── */
+  .wms-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 2rem;
+  }
+
+  .wms-action-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-decoration: none;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+    cursor: pointer;
+  }
+
+  .wms-action-card:hover {
+    border-color: var(--red);
+    box-shadow: 0 4px 16px rgba(211, 47, 47, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .wms-action-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .wms-action-icon.primary {
+    background: var(--red);
+  }
+
+  .wms-action-icon.secondary {
+    background: var(--black);
+  }
+
+  .wms-action-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--white);
+  }
+
+  .wms-action-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--black);
+    margin-bottom: 2px;
+  }
+
+  .wms-action-sub {
+    font-size: 12px;
+    color: var(--gray-600);
+  }
+
+  .wms-action-arrow {
+    margin-left: auto;
+    color: var(--gray-400);
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  /* ── INFO CARDS ROW ── */
+  .wms-cards-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 640px) {
+    .wms-cards-row { grid-template-columns: 1fr; }
+    .wms-nav-links { display: none; }
+    .wms-hero h1 { font-size: 24px; }
+  }
+
+  .wms-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .wms-card-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .wms-card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--black);
+  }
+
+  .wms-card-link {
+    font-size: 12px;
+    color: var(--red);
+    text-decoration: none;
+  }
+
+  .wms-card-link:hover { text-decoration: underline; }
+
+  /* Recent workers table */
+  .wms-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .wms-table th {
+    text-align: left;
+    padding: 10px 1.25rem;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--gray-600);
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .wms-table td {
+    padding: 11px 1.25rem;
+    color: var(--gray-800);
+    border-bottom: 1px solid var(--gray-100);
+  }
+
+  .wms-table tr:last-child td { border-bottom: none; }
+  .wms-table tbody tr:hover td { background: var(--gray-50); }
+
+  .wms-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .wms-badge.active {
+    background: #E8F5E9;
+    color: #2E7D32;
+  }
+
+  .wms-badge.leave {
+    background: #FFF3E0;
+    color: #E65100;
+  }
+
+  /* Attendance summary */
+  .wms-attendance {
+    padding: 1.25rem;
+  }
+
+  .wms-att-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--gray-100);
+  }
+
+  .wms-att-row:last-child { border-bottom: none; }
+
+  .wms-att-label {
+    font-size: 13px;
+    color: var(--gray-800);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .wms-att-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .wms-att-val {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--black);
+  }
+
+  .wms-att-bar-wrap {
+    height: 5px;
+    background: var(--gray-200);
+    border-radius: 3px;
+    margin-top: 0.75rem;
+    overflow: hidden;
+  }
+
+  .wms-att-bar {
+    height: 100%;
+    background: var(--red);
+    border-radius: 3px;
+  }
+
+  /* ── FOOTER ── */
+  .wms-footer {
+    background: var(--black);
+    color: var(--white);
+    font-size: 13px;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    border-top: 2px solid var(--red);
+  }
+</style>
+
+<div class="wms-wrapper">
+
+  <div class="wms-content">
+  <!-- NAV -->
+  <nav class="wms-nav">
+    <a href="/" class="wms-nav-brand">
+      <img src="{% static 'images/logo.png' %}" alt="LPP-01 Logo" style="height: 55px; width: auto; object-fit: contain; margin-right: 12px;">
+      <span class="wms-nav-title">Worker <span style="color: var(--red);">Management System</span></span>
+    </a>
+    <ul class="wms-nav-links">
+      <li><a href="/" class="active">Home</a></li>
+      <li><a href="/worker-entry/">Add Worker</a></li>
+      <li><a href="/case-manager/">Case Manager</a></li>
+      <li><a href="/salary-increment/">Salary Increment</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <div class="wms-hero">
+    <div class="wms-hero-tag">Lahore Polypropylene Industry</div>
+    <h1>Worker Management System</h1>
+    <p class="wms-hero-sub">Add, search, and manage workers efficiently — all in one place.</p>
+    <div class="wms-hero-actions">
+      <a href="/worker-entry/" class="wms-btn-primary">
+        <svg width="16" height="16" fill="white" viewBox="0 0 24 24"><path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"/></svg>
+        Add worker
+      </a>
+      <a href="/case-manager/" class="wms-btn-outline">
+        <svg width="16" height="16" fill="white" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        Case Manager
+      </a>
+    </div>
+  </div>
+
+  </div><!-- /wms-content -->
+
+  <!-- FOOTER -->
+  <footer class="wms-footer">
+    <p>&copy; {% now "Y" %} Lahore Polypropylene Industry (LPP-01). All rights reserved.</p>
+  </footer>
+
+</div><!-- /wms-wrapper -->
+
+</body>
+</html>

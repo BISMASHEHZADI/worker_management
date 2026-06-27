@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Salary Increment - Worker Management System{% endblock %}
+
+{% block content %}
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #D32F2F;
+    --red-dark: #B71C1C;
+    --red-light: #FFEBEE;
+    --black: #111111;
+    --white: #FFFFFF;
+    --gray-50: #FAFAFA;
+    --gray-100: #F5F5F5;
+    --gray-200: #EEEEEE;
+    --gray-400: #BDBDBD;
+    --gray-600: #757575;
+    --gray-800: #424242;
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  .si-page {
+    font-family: var(--font);
+    background: var(--gray-100);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .si-container {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .si-header {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 1.75rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-bottom: 3px solid var(--red);
+  }
+
+  .si-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--black);
+    margin-bottom: 0.5rem;
+  }
+
+  .si-header p {
+    font-size: 14px;
+    color: var(--gray-600);
+  }
+
+  .si-form-card {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .si-error {
+    background: var(--red-light);
+    border: 1px solid var(--red);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    color: var(--red-dark);
+    font-size: 14px;
+  }
+
+  .si-success {
+    background: #E8F5E9;
+    border: 1px solid #4CAF50;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    color: #2E7D32;
+    font-size: 14px;
+  }
+
+  .si-form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .si-form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 0.5rem;
+  }
+
+  .si-form-label span {
+    color: var(--red);
+  }
+
+  .si-form-select,
+  .si-form-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--gray-400);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: var(--font);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .si-form-select:focus,
+  .si-form-input:focus {
+    outline: none;
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+  }
+
+  .si-salary-display {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .si-salary-display .label {
+    font-size: 12px;
+    color: var(--gray-600);
+    margin-bottom: 0.25rem;
+  }
+
+  .si-salary-display .value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--black);
+  }
+
+  .si-submit-btn {
+    background: var(--red);
+    color: var(--white);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.15s;
+  }
+
+  .si-submit-btn:hover {
+    background: var(--red-dark);
+  }
+
+  .si-submit-btn:active {
+    background: #B71C1C;
+  }
+
+  .si-history {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 2rem;
+    margin-top: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .si-history h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--black);
+    margin-bottom: 1rem;
+  }
+
+  .si-history-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .si-history-table th,
+  .si-history-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--gray-200);
+  }
+
+  .si-history-table th {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .si-history-table td {
+    font-size: 14px;
+    color: var(--black);
+  }
+
+  .si-history-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .si-empty {
+    text-align: center;
+    padding: 2rem;
+    color: var(--gray-600);
+    font-size: 14px;
+  }
+</style>
+
+<div class="si-page">
+  <div class="si-container">
+    <div class="si-header">
+      <h1>Salary Increment</h1>
+      <p>Add salary increments for employees by year</p>
+    </div>
+
+    <div class="si-form-card">
+      {% if error_message %}
+      <div class="si-error">{{ error_message }}</div>
+      {% endif %}
+
+      {% if success_message %}
+      <div class="si-success">{{ success_message }}</div>
+      {% endif %}
+
+      <form method="POST">
+        {% csrf_token %}
+        <div class="si-form-group">
+          <label class="si-form-label">Select Employee <span>*</span></label>
+          <select class="si-form-select" id="workerSelect" name="worker" required onchange="updateSalaryDisplay()">
+            <option value="">-- Select Employee --</option>
+            {% for worker in workers %}
+            <option value="{{ worker.id }}">{{ worker.name }} - {{ worker.department }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="si-form-group">
+          <label class="si-form-label">Current Salary</label>
+          <div class="si-salary-display">
+            <div class="label">Gross Monthly Salary</div>
+            <div class="value" id="currentSalary">PKR 0.00</div>
+          </div>
+        </div>
+
+        <div class="si-form-group">
+          <label class="si-form-label">Increment Amount (PKR) <span>*</span></label>
+          <input type="number" class="si-form-input" name="increment_amount" placeholder="Enter increment amount" min="0" step="0.01" required oninput="updateNewSalary()">
+        </div>
+
+        <div class="si-form-group">
+          <label class="si-form-label">New Salary After Increment</label>
+          <div class="si-salary-display" style="background: #E8F5E9; border-color: #4CAF50;">
+            <div class="label">Updated Monthly Salary</div>
+            <div class="value" id="newSalary" style="color: #2E7D32;">PKR 0.00</div>
+          </div>
+        </div>
+
+        <div class="si-form-group">
+          <label class="si-form-label">Year <span>*</span></label>
+          <select class="si-form-select" name="year" required>
+            <option value="">-- Select Year --</option>
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026">2026</option>
+            <option value="2027">2027</option>
+            <option value="2028">2028</option>
+          </select>
+        </div>
+
+        <button type="submit" class="si-submit-btn">Add Salary Increment</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const workers = {
+    {% for worker in workers %}
+    {{ worker.id }}: {{ worker.gross_salary }}{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  };
+
+  function updateSalaryDisplay() {
+    const select = document.getElementById('workerSelect');
+    const salaryDisplay = document.getElementById('currentSalary');
+    const workerId = parseInt(select.value);
+    
+    if (workerId && workers[workerId]) {
+      salaryDisplay.textContent = 'PKR ' + workers[workerId].toFixed(2);
+    } else {
+      salaryDisplay.textContent = 'PKR 0.00';
+    }
+    updateNewSalary();
+  }
+
+  function updateNewSalary() {
+    const select = document.getElementById('workerSelect');
+    const incrementInput = document.querySelector('input[name="increment_amount"]');
+    const newSalaryDisplay = document.getElementById('newSalary');
+    const workerId = parseInt(select.value);
+    const increment = parseFloat(incrementInput.value) || 0;
+    
+    if (workerId && workers[workerId]) {
+      const newSalary = workers[workerId] + increment;
+      newSalaryDisplay.textContent = 'PKR ' + newSalary.toFixed(2);
+    } else {
+      newSalaryDisplay.textContent = 'PKR 0.00';
+    }
+  }
+</script>
+{% endblock %}

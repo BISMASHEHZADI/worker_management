@@ -1,0 +1,617 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Worker - Worker Management System{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+{% endblock %}
+
+{% block content %}
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --red: #D32F2F;
+  --red-dark: #B71C1C;
+  --red-light: #FFEBEE;
+  --black: #0f0f0f;
+  --white: #ffffff;
+  --gray-50: #f9f9f9;
+  --gray-100: #f2f2f2;
+  --gray-200: #e5e5e5;
+  --gray-300: #d0d0d0;
+  --gray-500: #9e9e9e;
+  --gray-700: #555555;
+  --gray-900: #1a1a1a;
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --radius: 8px;
+}
+
+body { font-family: var(--font); }
+
+/* PAGE WRAPPER */
+.wf-page {
+  background: var(--gray-100);
+  min-height: 100vh;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+/* TOP STRIP */
+.wf-top-strip {
+  background: var(--black);
+  border-bottom: 3px solid var(--red);
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.wf-top-badge {
+  background: var(--red);
+  width: 38px; height: 38px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.wf-top-badge svg { width: 20px; height: 20px; fill: #fff; }
+
+.wf-top-text h1 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.01em;
+}
+
+.wf-top-text p {
+  font-size: 12px;
+  color: var(--gray-500);
+  margin-top: 2px;
+}
+
+/* ERROR */
+.wf-error {
+  max-width: 780px;
+  margin: 0 auto 1.25rem;
+  background: var(--red-light);
+  border-left: 4px solid var(--red);
+  border-radius: var(--radius);
+  padding: 0.875rem 1.25rem;
+  font-size: 13px;
+  color: var(--red-dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wf-error svg { width: 16px; height: 16px; fill: var(--red); flex-shrink: 0; }
+
+/* CARD */
+.wf-card {
+  max-width: 780px;
+  margin: 0 auto;
+  background: var(--white);
+  border-radius: 14px;
+  border: 1px solid var(--gray-200);
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+/* SECTION */
+.wf-section {
+  padding: 1.75rem 2rem;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.wf-section:last-child { border-bottom: none; }
+
+.wf-section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+
+.wf-section-icon {
+  width: 32px; height: 32px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  background: var(--gray-100);
+}
+
+.wf-section-icon svg { width: 16px; height: 16px; fill: var(--red); }
+
+.wf-section-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--black);
+  letter-spacing: 0.02em;
+}
+
+.wf-section-line {
+  flex: 1;
+  height: 1px;
+  background: var(--gray-200);
+}
+
+/* PHOTO */
+.wf-photo-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.wf-photo-upload {
+  width: 120px;
+  height: 140px;
+  border: 2px dashed var(--gray-300);
+  border-radius: 10px;
+  background: var(--gray-50);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s, background 0.2s;
+  flex-shrink: 0;
+}
+
+.wf-photo-upload:hover {
+  border-color: var(--red);
+  background: var(--red-light);
+}
+
+.wf-photo-upload input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.wf-photo-upload img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wf-photo-icon svg { width: 30px; height: 30px; fill: var(--gray-300); }
+.wf-photo-hint { font-size: 10px; color: var(--gray-500); text-align: center; line-height: 1.4; }
+
+.wf-photo-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.wf-photo-meta-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--black);
+}
+
+.wf-photo-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--gray-700);
+}
+
+.wf-photo-meta-item svg { width: 13px; height: 13px; fill: var(--gray-500); flex-shrink: 0; }
+
+/* GRID */
+.wf-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.125rem 1.5rem;
+}
+
+@media (max-width: 560px) {
+  .wf-grid { grid-template-columns: 1fr; }
+  .wf-section { padding: 1.25rem; }
+  .wf-photo-row { gap: 1rem; }
+}
+
+.wf-span2 { grid-column: 1 / -1; }
+
+/* FIELD */
+.wf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wf-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-700);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.wf-field label .req { color: var(--red); margin-left: 2px; }
+
+.wf-field input {
+  height: 42px;
+  padding: 0 13px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius);
+  font-size: 14px;
+  color: var(--black);
+  background: var(--white);
+  font-family: var(--font);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+
+.wf-field input:hover { border-color: var(--gray-300); }
+
+.wf-field input:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(211,47,47,0.1);
+}
+
+.wf-field input::placeholder {
+  color: var(--gray-300);
+  font-size: 13px;
+}
+
+/* special inputs */
+#id_cnic, #cnic {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.06em;
+}
+
+.wf-prefix-wrap { position: relative; }
+.wf-prefix-wrap .prefix {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-500);
+  pointer-events: none;
+  user-select: none;
+}
+.wf-prefix-wrap input { padding-left: 40px; }
+
+/* FOOTER */
+.wf-footer {
+  background: var(--gray-50);
+  padding: 1.25rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.wf-footer-note {
+  font-size: 12px;
+  color: var(--gray-500);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.wf-footer-note svg { width: 14px; height: 14px; fill: var(--gray-300); }
+
+.wf-submit {
+  background: var(--red);
+  color: #fff;
+  border: none;
+  height: 44px;
+  padding: 0 32px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.02em;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.wf-submit:hover { background: var(--red-dark); transform: translateY(-1px); }
+.wf-submit:active { transform: translateY(0); }
+.wf-submit svg { width: 16px; height: 16px; fill: #fff; }
+
+/* CROP MODAL */
+.wf-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+
+.wf-modal-box {
+  background: var(--white);
+  border-radius: 14px;
+  width: 90%;
+  max-width: 540px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.wf-modal-head {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wf-modal-head h3 { font-size: 15px; font-weight: 700; color: var(--black); }
+
+.wf-modal-close {
+  width: 32px; height: 32px;
+  border: 1px solid var(--gray-200);
+  border-radius: 6px;
+  background: var(--white);
+  cursor: pointer;
+  font-size: 20px;
+  color: var(--gray-500);
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+  transition: background 0.15s;
+}
+
+.wf-modal-close:hover { background: var(--gray-100); }
+
+.wf-modal-body {
+  padding: 1.25rem;
+  overflow: hidden;
+  max-height: 55vh;
+}
+
+.wf-modal-body img { max-width: 100%; display: block; }
+
+.wf-modal-foot {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--gray-200);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.wf-modal-cancel {
+  height: 38px;
+  padding: 0 18px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius);
+  background: var(--white);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.wf-modal-cancel:hover { background: var(--gray-100); }
+
+.wf-modal-confirm {
+  height: 38px;
+  padding: 0 20px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--red);
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s;
+}
+
+.wf-modal-confirm:hover { background: var(--red-dark); }
+.wf-modal-confirm svg { width: 14px; height: 14px; fill: #fff; }
+</style>
+
+<!-- TOP STRIP -->
+<div class="wf-top-strip">
+  <div class="wf-top-badge">
+    <svg viewBox="0 0 24 24"><path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"/></svg>
+  </div>
+  <div class="wf-top-text">
+    <h1>{% if is_edit %}Edit Worker{% else %}Register New Worker{% endif %}</h1>
+    <p>Lahore Polypropylene Industry · LPP-01</p>
+  </div>
+</div>
+
+<div class="wf-page">
+
+  {% if error_message %}
+  <div class="wf-error">
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+    {{ error_message }}
+  </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="wf-card">
+
+      <!-- ① PHOTO -->
+      <div class="wf-section">
+        <div class="wf-section-head">
+          <div class="wf-section-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          </div>
+          <span class="wf-section-label">Profile Photo</span>
+          <div class="wf-section-line"></div>
+        </div>
+
+        <div class="wf-photo-row">
+          <div class="wf-photo-upload" id="photoBox">
+            {% if worker and worker.photo %}
+              <img src="{{ worker.photo.url }}" alt="Worker Photo" class="wf-preview" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:8px;">
+            {% else %}
+              <div class="wf-photo-icon" id="photoPlaceholder">
+                <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+              </div>
+              <span class="wf-photo-hint">Click to upload<br>passport photo</span>
+            {% endif %}
+            <input type="file" id="photo" name="photo" accept="image/*" onchange="handlePhotoUpload(this)">
+          </div>
+
+          <div class="wf-photo-meta">
+            <div class="wf-photo-meta-title">Passport size photo</div>
+            <div class="wf-photo-meta-item">
+              <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2z"/></svg>
+              Format: JPG or PNG
+            </div>
+            <div class="wf-photo-meta-item">
+              <svg viewBox="0 0 24 24"><path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3h-6zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3v6zm6 12l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6h6zm12-6l-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6v-6z"/></svg>
+              Size: 300 × 300 px
+            </div>
+            <div class="wf-photo-meta-item">
+              <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              Auto-cropped to square
+            </div>
+          </div>
+        </div>
+
+        <input type="hidden" id="cropped-photo-data" name="cropped_photo">
+      </div>
+
+      <!-- ② PERSONAL -->
+      <div class="wf-section">
+        <div class="wf-section-head">
+          <div class="wf-section-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12z"/></svg>
+          </div>
+          <span class="wf-section-label">Personal Information</span>
+          <div class="wf-section-line"></div>
+        </div>
+
+        <div class="wf-grid">
+          <div class="wf-field">
+            <label for="name">Full Name <span class="req">*</span></label>
+            <input type="text" id="name" name="name" placeholder="Muhammad Ali" value="{% if worker %}{{ worker.name }}{% endif %}" required>
+          </div>
+
+          <div class="wf-field">
+            <label for="father_name">Father's Name <span class="req">*</span></label>
+            <input type="text" id="father_name" name="father_name" placeholder="Abdul Rehman" value="{% if worker %}{{ worker.father_name }}{% endif %}" required>
+          </div>
+
+          <div class="wf-field">
+            <label for="cnic">CNIC <span class="req">*</span></label>
+            <input type="text" id="cnic" name="cnic" placeholder="42201-1234567-1" maxlength="15" value="{% if worker %}{{ worker.cnic }}{% endif %}" required>
+          </div>
+
+          <div class="wf-field">
+            <label for="phone_number">Phone Number <span class="req">*</span></label>
+            <input type="text" id="phone_number" name="phone_number" placeholder="0300-1234567" value="{% if worker %}{{ worker.phone_number }}{% endif %}" required>
+          </div>
+
+          <div class="wf-field wf-span2">
+            <label for="address">Home Address <span class="req">*</span></label>
+            <input type="text" id="address" name="address" placeholder="House No, Street, Area, City" value="{% if worker %}{{ worker.address }}{% endif %}" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- ③ JOB -->
+      <div class="wf-section">
+        <div class="wf-section-head">
+          <div class="wf-section-icon">
+            <svg viewBox="0 0 24 24"><path d="M20 6H16V4C16 2.89 15.11 2 14 2H10C8.89 2 8 2.89 8 4V6H4C2.89 6 2 6.89 2 8V20C2 21.11 2.89 22 4 22H20C21.11 22 22 21.11 22 20V8C22 6.89 21.11 6 20 6M10 4H14V6H10V4Z"/></svg>
+          </div>
+          <span class="wf-section-label">Job Details</span>
+          <div class="wf-section-line"></div>
+        </div>
+
+        <div class="wf-grid">
+          <div class="wf-field">
+            <label for="department">Department <span class="req">*</span></label>
+            <input type="text" id="department" name="department" placeholder="e.g. Production" value="{% if worker %}{{ worker.department }}{% endif %}" required>
+          </div>
+
+          <div class="wf-field">
+            <label for="designation">Designation <span class="req">*</span></label>
+            <input type="text" id="designation" name="designation" placeholder="e.g. Machine Operator" value="{% if worker %}{{ worker.designation }}{% endif %}" required>
+          </div>
+
+          <div class="wf-field">
+            <label for="date_of_joining">Date of Joining <span class="req">*</span></label>
+            <input type="date" id="date_of_joining" name="date_of_joining" value="{% if worker %}{{ worker.date_of_joining|date:'Y-m-d' }}{% endif %}" required>
+          </div>
+
+          <div class="wf-field">
+            <label for="gross_salary">Gross Salary <span class="req">*</span></label>
+            <div class="wf-prefix-wrap">
+              <span class="prefix">Rs</span>
+              <input type="number" id="gross_salary" name="gross_salary" step="0.01" placeholder="25,000" value="{% if worker %}{{ worker.gross_salary }}{% endif %}" required>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="wf-footer">
+        <div class="wf-footer-note">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+          Fields marked <strong style="color:var(--red);margin:0 2px;">*</strong> are required
+        </div>
+        <button type="submit" class="wf-submit">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          {% if is_edit %}Update Worker{% else %}Register Worker{% endif %}
+        </button>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<script>
+function handlePhotoUpload(input) {
+  if (!input.files || !input.files[0]) return;
+  
+  // Show preview immediately
+  const box = document.getElementById('photoBox');
+  const ph  = document.getElementById('photoPlaceholder');
+  const hint = box.querySelector('.wf-photo-hint');
+  let prev  = box.querySelector('img.wf-preview');
+  if (!prev) {
+    prev = document.createElement('img');
+    prev.className = 'wf-preview';
+    prev.alt = 'Preview';
+    prev.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:8px;';
+    box.appendChild(prev);
+  }
+  prev.src = URL.createObjectURL(input.files[0]);
+  if (ph) ph.style.display = 'none';
+  if (hint) hint.style.display = 'none';
+}
+
+// CNIC auto-format
+document.getElementById('cnic').addEventListener('input', function() {
+  let v = this.value.replace(/\D/g, '');
+  if (v.length > 5)  v = v.slice(0,5)  + '-' + v.slice(5);
+  if (v.length > 13) v = v.slice(0,13) + '-' + v.slice(13);
+  this.value = v.slice(0, 15);
+});
+</script>
+
+{% endblock %}

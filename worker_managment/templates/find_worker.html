@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Find Worker - Worker Management System{% endblock %}
+
+{% block content %}
+<div class="search-container">
+    <div class="search-header">
+        <img src="{% static 'images/logo.png' %}" alt="LPP-01 Logo" class="logo">
+    </div>
+
+    <form method="get" action="/find">
+        <input type="text" name="q" class="search-box" placeholder="Search by Name, CNIC, or Phone Number..." value="{{ query }}">
+    </form>
+
+    <div class="search-results">
+        {% if workers %}
+            <h2 style="color: var(--primary-red); margin-bottom: 1.5rem;">Search Results</h2>
+            {% for worker in workers %}
+                <div class="card" style="margin-bottom: 1rem; cursor: pointer;" onclick="window.location.href='/worker/{{ worker.id }}'">
+                    <h3>{{ worker.name }}</h3>
+                    <p>CNIC: {{ worker.cnic }}</p>
+                    <p>Department: {{ worker.department }}</p>
+                    <p>Designation: {{ worker.designation }}</p>
+                </div>
+            {% endfor %}
+        {% elif query %}
+            <p style="text-align: center; color: var(--gray);">No workers found matching "{{ query }}".</p>
+        {% else %}
+            <p style="text-align: center; color: var(--gray);">Enter a search term to find workers.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

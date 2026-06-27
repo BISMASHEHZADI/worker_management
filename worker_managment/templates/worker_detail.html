@@ -1,0 +1,932 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ worker.name }} - Worker Management System{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #1c1b19;
+  --ink-soft: #4a463f;
+  --paper: #f3f1ec;
+  --surface: #ffffff;
+  --line: #e1ddd3;
+  --line-strong: #cfc9ba;
+  --accent: #8a2a2a;
+  --accent-deep: #5e1c1c;
+  --accent-soft: #f4e8e6;
+  --success: #386b45;
+  --muted: #97907e;
+  --font-display: 'Source Serif 4', Georgia, serif;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+}
+
+body { font-family: var(--font-body); }
+
+/* PAGE */
+.wd-page {
+  background: var(--paper);
+  min-height: 100vh;
+  padding-bottom: 3rem;
+}
+
+/* HEADER */
+.wd-header {
+  background: var(--ink);
+  border-bottom: 2px solid var(--accent);
+  padding: 0.95rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.wd-header-left {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.wd-monogram {
+  width: 36px; height: 36px;
+  background: var(--accent);
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+}
+
+.wd-header-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f5f3ee;
+  letter-spacing: 0.01em;
+}
+.wd-header-sub {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: #9b958a;
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.wd-back-btn {
+  background: transparent;
+  border: 1px solid #44403a;
+  color: #d8d4cb;
+  padding: 7px 15px;
+  border-radius: 5px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.wd-back-btn:hover {
+  border-color: #5c574e;
+  color: #fff;
+  background: rgba(255,255,255,0.04);
+}
+.wd-back-btn svg { width: 13px; height: 13px; fill: currentColor; }
+
+/* BODY */
+.wd-body {
+  max-width: 860px;
+  margin: 2rem auto;
+  padding: 0 1.25rem;
+}
+
+/* PROFILE CARD */
+.wd-profile-card {
+  background: var(--surface);
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  overflow: visible;
+  box-shadow: 0 1px 3px rgba(28,27,25,0.06);
+  margin-bottom: 1.25rem;
+  position: relative;
+}
+
+/* CARD TOP BANNER */
+.wd-card-banner {
+  background: var(--ink);
+  height: 64px;
+  border-radius: 10px 10px 0 0;
+  position: relative;
+}
+.wd-card-banner::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+}
+
+/* PHOTO + NAME ROW */
+.wd-profile-row {
+  padding: 0 2rem 1.1rem;
+  display: flex;
+  align-items: flex-end;
+  gap: 1.4rem;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.wd-photo-wrap {
+  margin-top: -36px;
+  flex-shrink: 0;
+}
+
+.wd-photo {
+  width: 92px;
+  height: 92px;
+  border-radius: 8px;
+  border: 3px solid var(--surface);
+  outline: 1px solid var(--line);
+  object-fit: cover;
+  display: block;
+}
+
+.wd-no-photo {
+  width: 92px;
+  height: 92px;
+  border-radius: 8px;
+  border: 3px solid var(--surface);
+  outline: 1px solid var(--line);
+  background: var(--paper);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wd-no-photo svg { width: 32px; height: 32px; fill: var(--line-strong); }
+
+.wd-name-block {
+  padding-bottom: 5px;
+  flex: 1;
+  min-width: 180px;
+}
+
+.wd-name {
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+
+.wd-designation {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+.wd-designation span { color: var(--muted); }
+
+/* SIGNATURE ELEMENT: ID badge styled like a clipped registry tab */
+.wd-idbadge {
+  width: 78px;
+  flex-shrink: 0;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  padding: 11px 6px 9px;
+  text-align: center;
+  transform: rotate(-2.5deg);
+  box-shadow: 0 8px 18px rgba(28,27,25,0.14);
+  margin-bottom: 2px;
+  position: relative;
+}
+.wd-idbadge::before {
+  content: '';
+  position: absolute;
+  top: -6px; left: 50%;
+  transform: translateX(-50%);
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: var(--ink);
+  box-shadow: 0 0 0 3px var(--surface);
+}
+.wd-idbadge-label {
+  font-family: var(--font-mono);
+  font-size: 7.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.wd-idbadge-num {
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 3px 0 7px;
+}
+.wd-idbadge-bars {
+  height: 12px;
+  border-radius: 1px;
+  background: repeating-linear-gradient(90deg,
+    var(--ink) 0px, var(--ink) 2px,
+    transparent 2px, transparent 4px,
+    var(--ink) 4px, var(--ink) 5px,
+    transparent 5px, transparent 8px,
+    var(--ink) 8px, var(--ink) 10px,
+    transparent 10px, transparent 12px,
+    var(--ink) 12px, var(--ink) 13px,
+    transparent 13px, transparent 16px);
+}
+
+/* META ROW: department tag, status, pdf button */
+.wd-meta-row {
+  padding: 0.95rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+}
+
+.wd-tags { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+.wd-tag-dept {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 11px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: var(--accent-soft);
+  color: var(--accent-deep);
+}
+
+/* PDF BUTTON */
+.wd-pdf-btn {
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  letter-spacing: 0.01em;
+  transition: background 0.15s;
+}
+.wd-pdf-btn:hover { background: var(--accent-deep); }
+.wd-pdf-btn:active { background: var(--accent); }
+.wd-pdf-btn svg { width: 14px; height: 14px; fill: #fff; }
+
+/* INFO SECTIONS */
+.wd-section {
+  padding: 1.4rem 2rem 0.4rem;
+}
+.wd-section:last-child { padding-bottom: 1.6rem; }
+
+.wd-section-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+  margin-bottom: 0.9rem;
+  display: inline-block;
+  border-bottom: 2px solid var(--accent-soft);
+  padding-bottom: 6px;
+}
+
+.wd-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 2rem;
+}
+
+@media (max-width: 560px) {
+  .wd-info-grid { grid-template-columns: 1fr; }
+  .wd-profile-row { padding: 0 1.25rem 1rem; }
+  .wd-meta-row { padding: 0.9rem 1.25rem; }
+  .wd-section { padding: 1.25rem 1.25rem 0.4rem; }
+  .wd-idbadge { transform: rotate(0deg); }
+}
+
+.wd-info-cell {
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.wd-info-cell.full { grid-column: 1 / -1; }
+
+.wd-info-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+
+.wd-info-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.wd-info-value.mono {
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+  font-size: 13px;
+}
+
+.wd-info-value.salary {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--success);
+}
+
+.wd-salary-prefix {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-right: 4px;
+}
+
+/* SALARY INCREMENT HISTORY */
+.wd-increment-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.wd-increment-row {
+  display: flex;
+  gap: 2rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.wd-increment-row:last-child { border-bottom: none; }
+
+.wd-increment-field {
+  flex: 1;
+  min-width: 130px;
+}
+
+@media (max-width: 560px) {
+  .wd-increment-row { flex-direction: column; gap: 0.6rem; }
+}
+
+/* ── HIDDEN PDF TEMPLATE ── */
+#pdf-template {
+  display: none;
+  position: absolute;
+  left: -9999px;
+  top: 0;
+}
+
+/* PDF inner styles (used by html2canvas) */
+.pdf-doc {
+  width: 794px;
+  background: #fff;
+  font-family: 'IBM Plex Sans', Arial, sans-serif;
+  color: #1c1b19;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+.pdf-doc * { line-height: inherit; }
+
+.pdf-header {
+  background: #1c1b19;
+  padding: 26px 36px;
+  display: flex;
+  align-items: center;
+  border-bottom: 3px solid #8a2a2a;
+}
+
+.pdf-company { display: flex; align-items: center; gap: 13px; }
+.pdf-monogram {
+  width: 38px; height: 38px;
+  background: #8a2a2a;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+}
+.pdf-company-name { font-family: 'Source Serif 4', Georgia, serif; font-size: 17px; font-weight: 700; color: #f5f3ee; letter-spacing: 0; }
+.pdf-company-sub  { font-size: 10px; color: #9b958a; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.07em; }
+
+.pdf-profile {
+  padding: 26px 36px;
+  display: flex;
+  gap: 22px;
+  align-items: flex-start;
+  border-bottom: 1px solid #eee;
+}
+
+.pdf-photo {
+  width: 104px;
+  height: 124px;
+  border-radius: 6px;
+  border: 1px solid #e1ddd3;
+  flex-shrink: 0;
+  background-color: #f3f1ec;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.pdf-no-photo {
+  width: 104px;
+  height: 124px;
+  border-radius: 6px;
+  background: #f3f1ec;
+  border: 1px solid #e1ddd3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #97907e;
+  font-size: 11px;
+  text-align: center;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.pdf-name-block { flex: 1; }
+
+.pdf-worker-name {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 23px;
+  font-weight: 700;
+  color: #1c1b19;
+  letter-spacing: 0;
+  margin-bottom: 4px;
+}
+
+.pdf-designation {
+  font-size: 13px;
+  color: #4a463f;
+  margin-bottom: 14px;
+}
+
+.pdf-tag-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+.pdf-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.pdf-tag-dept   { background: #f4e8e6; color: #5e1c1c; }
+
+.pdf-section {
+  padding: 22px 36px 0;
+}
+
+.pdf-section-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5e1c1c;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #f4e8e6;
+  display: inline-block;
+}
+
+.pdf-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 28px;
+}
+
+.pdf-cell {
+  padding: 10px 0;
+  border-bottom: 1px solid #f1efe9;
+}
+
+.pdf-cell.full { grid-column: 1 / -1; }
+
+.pdf-cell-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #97907e;
+  margin-bottom: 4px;
+}
+
+.pdf-cell-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1c1b19;
+}
+
+.pdf-cell-value.mono {
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.02em;
+  font-size: 12px;
+}
+
+.pdf-cell-value.green { font-family: 'IBM Plex Mono', monospace; color: #386b45; font-size: 15px; font-weight: 600; }
+
+.pdf-increment-list { display: flex; flex-direction: column; }
+.pdf-increment-row {
+  display: flex;
+  gap: 28px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1efe9;
+}
+.pdf-increment-row:last-child { border-bottom: none; }
+.pdf-increment-field { flex: 1; }
+
+.pdf-footer {
+  border-top: 1px solid #eee;
+  padding: 20px 36px 28px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 24px;
+  gap: 24px;
+}
+
+.pdf-footer-left  { font-size: 9.5px; color: #97907e; line-height: 1.6; }
+.pdf-footer-sig { text-align: center; }
+.pdf-footer-sig-line { width: 150px; border-bottom: 1px solid #cfc9ba; height: 28px; }
+.pdf-footer-sig-label { font-size: 9px; color: #97907e; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 5px; }
+</style>
+
+<div class="wd-page">
+
+  <!-- HEADER -->
+  <div class="wd-header">
+    <div class="wd-header-left">
+      <div class="wd-monogram">LP</div>
+      <div>
+        <div class="wd-header-title">Worker Personnel Record</div>
+        <div class="wd-header-sub">Lahore Polypropylene Industry · Registry LPP&#8209;01</div>
+      </div>
+    </div>
+    <a href="/case-manager/" class="wd-back-btn">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      Back to Case Manager
+    </a>
+  </div>
+
+  <div class="wd-body">
+    <div class="wd-profile-card">
+
+      <!-- BANNER -->
+      <div class="wd-card-banner"></div>
+
+      <!-- PHOTO + NAME + ID BADGE -->
+      <div class="wd-profile-row">
+        <div class="wd-photo-wrap">
+          {% if worker.photo %}
+            <img src="{{ worker.photo.url }}" alt="{{ worker.name }}" class="wd-photo" id="workerPhotoEl">
+          {% else %}
+            <div class="wd-no-photo" id="workerPhotoEl">
+              <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="wd-name-block">
+          <div class="wd-name">{{ worker.name }}</div>
+          <div class="wd-designation">{{ worker.designation }} <span>·</span> {{ worker.department }}</div>
+        </div>
+
+        <div class="wd-idbadge">
+          <div class="wd-idbadge-label">Worker ID</div>
+          <div class="wd-idbadge-num">{{ worker.id }}</div>
+          <div class="wd-idbadge-bars"></div>
+        </div>
+      </div>
+
+      <!-- META ROW -->
+      <div class="wd-meta-row">
+        <div class="wd-tags">
+          <span class="wd-tag-dept">{{ worker.department }}</span>
+        </div>
+        <button class="wd-pdf-btn" onclick="downloadPDF()">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9.7 5.5h1.7c.9 0 1.6.7 1.6 1.6 0 .9-.7 1.6-1.6 1.6H9.3V8.5zm5.2 7H9.3v-2h5.2v2zm0-3.3H9.3v-2h5.2v2zM5 3v18l4-4h10V3H5z"/></svg>
+          Download PDF
+        </button>
+      </div>
+
+      <!-- PERSONAL INFORMATION -->
+      <div class="wd-section">
+        <div class="wd-section-title">Personal Information</div>
+        <div class="wd-info-grid">
+
+          <div class="wd-info-cell">
+            <div class="wd-info-label">Full Name</div>
+            <div class="wd-info-value">{{ worker.name }}</div>
+          </div>
+
+          <div class="wd-info-cell">
+            <div class="wd-info-label">Father's Name</div>
+            <div class="wd-info-value">{{ worker.father_name }}</div>
+          </div>
+
+          <div class="wd-info-cell">
+            <div class="wd-info-label">CNIC</div>
+            <div class="wd-info-value mono">{{ worker.cnic }}</div>
+          </div>
+
+          <div class="wd-info-cell">
+            <div class="wd-info-label">Phone Number</div>
+            <div class="wd-info-value mono">{{ worker.phone_number }}</div>
+          </div>
+
+          <div class="wd-info-cell full">
+            <div class="wd-info-label">Address</div>
+            <div class="wd-info-value">{{ worker.address }}</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- EMPLOYMENT DETAILS -->
+      <div class="wd-section">
+        <div class="wd-section-title">Employment Details</div>
+        <div class="wd-info-grid">
+
+          <div class="wd-info-cell">
+            <div class="wd-info-label">Department</div>
+            <div class="wd-info-value">{{ worker.department }}</div>
+          </div>
+
+          <div class="wd-info-cell">
+            <div class="wd-info-label">Designation</div>
+            <div class="wd-info-value">{{ worker.designation }}</div>
+          </div>
+
+          <div class="wd-info-cell">
+            <div class="wd-info-label">Date of Joining</div>
+            <div class="wd-info-value">{{ worker.date_of_joining }}</div>
+          </div>
+
+          <div class="wd-info-cell">
+            <div class="wd-info-label">Gross Salary</div>
+            <div class="wd-info-value salary"><span class="wd-salary-prefix">PKR</span>{{ worker.gross_salary }}</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SALARY INCREMENT HISTORY -->
+      {% if increments %}
+      <div class="wd-section">
+        <div class="wd-section-title">Salary Increment History</div>
+        <div class="wd-increment-list">
+          {% for increment in increments %}
+          <div class="wd-increment-row">
+            <div class="wd-increment-field">
+              <div class="wd-info-label">Year</div>
+              <div class="wd-info-value">{{ increment.year }}</div>
+            </div>
+            <div class="wd-increment-field">
+              <div class="wd-info-label">Increment Amount</div>
+              <div class="wd-info-value salary"><span class="wd-salary-prefix">PKR</span>{{ increment.increment_amount }}</div>
+            </div>
+            <div class="wd-increment-field">
+              <div class="wd-info-label">Date Added</div>
+              <div class="wd-info-value">{{ increment.created_at|date:"M d, Y" }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+<!-- HIDDEN PDF TEMPLATE -->
+<div id="pdf-template">
+  <div class="pdf-doc" id="pdf-content">
+
+    <div class="pdf-header">
+      <div class="pdf-company">
+        <div class="pdf-monogram">LP</div>
+        <div>
+          <div class="pdf-company-name">Lahore Polypropylene Industry</div>
+          <div class="pdf-company-sub">Registry LPP&#8209;01 · Worker Management System</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pdf-profile">
+      {% if worker.photo %}
+        <div class="pdf-photo" id="pdfPhoto" style="background-image: url('{{ worker.photo.url }}');"></div>
+      {% else %}
+        <div class="pdf-no-photo">No Photo<br>on File</div>
+      {% endif %}
+
+      <div class="pdf-name-block">
+        <div class="pdf-worker-name">{{ worker.name }}</div>
+        <div class="pdf-designation">{{ worker.designation }} · {{ worker.department }}</div>
+        <div class="pdf-tag-row">
+          <span class="pdf-tag pdf-tag-dept">{{ worker.department }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pdf-section">
+      <div class="pdf-section-title">Personal Information</div>
+      <div class="pdf-grid">
+        <div class="pdf-cell">
+          <div class="pdf-cell-label">Full Name</div>
+          <div class="pdf-cell-value">{{ worker.name }}</div>
+        </div>
+        <div class="pdf-cell">
+          <div class="pdf-cell-label">Father's Name</div>
+          <div class="pdf-cell-value">{{ worker.father_name }}</div>
+        </div>
+        <div class="pdf-cell">
+          <div class="pdf-cell-label">CNIC</div>
+          <div class="pdf-cell-value mono">{{ worker.cnic }}</div>
+        </div>
+        <div class="pdf-cell">
+          <div class="pdf-cell-label">Phone Number</div>
+          <div class="pdf-cell-value mono">{{ worker.phone_number }}</div>
+        </div>
+        <div class="pdf-cell full">
+          <div class="pdf-cell-label">Home Address</div>
+          <div class="pdf-cell-value">{{ worker.address }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pdf-section" style="margin-top:6px;">
+      <div class="pdf-section-title">Employment Details</div>
+      <div class="pdf-grid">
+        <div class="pdf-cell">
+          <div class="pdf-cell-label">Department</div>
+          <div class="pdf-cell-value">{{ worker.department }}</div>
+        </div>
+        <div class="pdf-cell">
+          <div class="pdf-cell-label">Designation</div>
+          <div class="pdf-cell-value">{{ worker.designation }}</div>
+        </div>
+        <div class="pdf-cell">
+          <div class="pdf-cell-label">Date of Joining</div>
+          <div class="pdf-cell-value">{{ worker.date_of_joining }}</div>
+        </div>
+        <div class="pdf-cell">
+          <div class="pdf-cell-label">Gross Salary</div>
+          <div class="pdf-cell-value green">PKR {{ worker.gross_salary }}</div>
+        </div>
+      </div>
+    </div>
+
+    {% if increments %}
+    <div class="pdf-section" style="margin-top:6px;">
+      <div class="pdf-section-title">Salary Increment History</div>
+      <div class="pdf-increment-list">
+        {% for increment in increments %}
+        <div class="pdf-increment-row">
+          <div class="pdf-increment-field">
+            <div class="pdf-cell-label">Year</div>
+            <div class="pdf-cell-value">{{ increment.year }}</div>
+          </div>
+          <div class="pdf-increment-field">
+            <div class="pdf-cell-label">Increment Amount</div>
+            <div class="pdf-cell-value green">PKR {{ increment.increment_amount }}</div>
+          </div>
+          <div class="pdf-increment-field">
+            <div class="pdf-cell-label">Date Added</div>
+            <div class="pdf-cell-value">{{ increment.created_at|date:"M d, Y" }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="pdf-footer">
+      <div class="pdf-footer-left">
+        Generated by LPP&#8209;01 Worker Management System<br>
+        <span id="pdf-date-stamp"></span><br>
+        This record is confidential and intended for internal HR use only.
+      </div>
+      <div class="pdf-footer-sig">
+        <div class="pdf-footer-sig-line"></div>
+        <div class="pdf-footer-sig-label">Authorized Signature</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+async function downloadPDF() {
+  const btn = document.querySelector('.wd-pdf-btn');
+  btn.innerHTML = '<svg width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0020 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 004 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> Generating...';
+  btn.style.opacity = '0.8';
+  btn.disabled = true;
+
+  // set date
+  document.getElementById('pdf-date-stamp').textContent = 'Generated on: ' + new Date().toLocaleDateString('en-PK', { day:'2-digit', month:'long', year:'numeric' });
+
+  // Make sure the custom typefaces have actually finished loading first —
+  // otherwise html2canvas can capture a fallback font and the PDF text looks off.
+  try { await document.fonts.ready; } catch (e) {}
+
+  // Preload the worker photo so it's fully decoded before the snapshot is taken.
+  // (Capturing an image that hasn't loaded yet is the main reason photos come
+  // out broken or blank in the downloaded PDF.)
+  {% if worker.photo %}
+  await new Promise((resolve) => {
+    const preload = new Image();
+    preload.onload = resolve;
+    preload.onerror = resolve;
+    preload.src = "{{ worker.photo.url }}";
+  });
+  {% endif %}
+
+  const el = document.getElementById('pdf-content');
+  el.parentElement.style.display = 'block';
+  el.parentElement.style.position = 'fixed';
+  el.parentElement.style.left = '-9999px';
+  el.parentElement.style.top = '0';
+
+  try {
+    const canvas = await html2canvas(el, {
+      scale: 2.5,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      imageTimeout: 0,
+    });
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    const pdfW = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const pdfH = (canvas.height * pdfW) / canvas.width;
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+    // If the record is taller than one A4 page (e.g. a long increment
+    // history), split it cleanly across multiple pages instead of cutting
+    // content off at the bottom of the first page.
+    let heightLeft = pdfH;
+    let position = 0;
+
+    pdf.addImage(imgData, 'JPEG', 0, position, pdfW, pdfH);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position -= pageHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, position, pdfW, pdfH);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save('{{ worker.name|slugify }}-LPP01-profile.pdf');
+  } catch(e) {
+    alert('PDF generation failed. Please try again.');
+    console.error(e);
+  }
+
+  el.parentElement.style.display = 'none';
+  btn.innerHTML = '<svg width="14" height="14" fill="white" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg> Download PDF';
+  btn.style.opacity = '1';
+  btn.disabled = false;
+}
+</script>
+
+{% endblock %}

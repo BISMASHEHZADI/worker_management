@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete Worker - Worker Management System{% endblock %}
+
+{% block content %}
+<div class="worker-entry-container">
+    <div class="worker-form-section">
+        <div class="worker-page-header">
+            <h1>Delete Worker</h1>
+            <p>Are you sure you want to delete this worker?</p>
+        </div>
+        
+        <div class="delete-confirmation">
+            <div class="worker-info">
+                <p><strong>Name:</strong> {{ worker.name }}</p>
+                <p><strong>Father Name:</strong> {{ worker.father_name }}</p>
+                <p><strong>CNIC:</strong> {{ worker.cnic }}</p>
+                <p><strong>Department:</strong> {{ worker.department }}</p>
+                <p><strong>Designation:</strong> {{ worker.designation }}</p>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="delete-actions">
+                    <a href="/case-manager/" class="cancel-btn">Cancel</a>
+                    <button type="submit" class="delete-btn">Delete Worker</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.delete-confirmation {
+    padding: 2rem 0;
+}
+
+.worker-info {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-left: 4px solid var(--primary-red);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.worker-info p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+    color: #374151;
+}
+
+.worker-info strong {
+    color: var(--primary-red);
+    font-weight: 600;
+}
+
+.delete-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.cancel-btn {
+    background: #e5e7eb;
+    color: #374151;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+    background: #d1d5db;
+}
+
+.delete-btn {
+    background: var(--primary-red);
+    color: white;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+    background: var(--dark-red);
+}
+</style>
+{% endblock %}
